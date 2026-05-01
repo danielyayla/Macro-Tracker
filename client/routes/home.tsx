@@ -1,0 +1,81 @@
+import { css, type Handle } from 'remix/ui'
+import { Counter } from '#client/counter.tsx'
+import {
+	colors,
+	radius,
+	shadows,
+	spacing,
+	typography,
+} from '#client/styles/tokens.ts'
+export function HomeRoute(_handle: Handle) {
+	return () => (
+		<section
+			mix={[
+				css({
+					display: 'grid',
+					gap: spacing.lg,
+					justifyItems: 'center',
+					textAlign: 'center',
+				}),
+			]}
+		>
+			<div
+				mix={[
+					css({
+						display: 'grid',
+						gap: spacing.lg,
+						padding: spacing.lg,
+						borderRadius: radius.lg,
+						border: `1px solid ${colors.border}`,
+						background: `linear-gradient(135deg, ${colors.primarySoftStrong}, ${colors.primarySoftest})`,
+						boxShadow: shadows.sm,
+						maxWidth: '36rem',
+						width: '100%',
+					}),
+				]}
+			>
+				<div
+					mix={[
+						css({
+							display: 'grid',
+							gap: spacing.md,
+							justifyItems: 'center',
+						}),
+					]}
+				>
+					<img
+						src="/logo.png"
+						alt="macro-tracker logo"
+						mix={[
+							css({
+								width: '220px',
+								maxWidth: '100%',
+								height: 'auto',
+							}),
+						]}
+					/>
+					<div mix={[css({ display: 'grid', gap: spacing.sm })]}>
+						<h1
+							mix={[
+								css({
+									fontSize: typography.fontSize['2xl'],
+									fontWeight: typography.fontWeight.semibold,
+									margin: 0,
+									color: colors.text,
+								}),
+							]}
+						>
+							macro-tracker{' '}
+							<span mix={[css({ color: colors.primaryText })]}>Remix 3</span>
+						</h1>
+						<p mix={[css({ margin: 0, color: colors.textMuted })]}>
+							Remix 3 components running on the client, backed by Remix 3
+							routing in the worker.
+						</p>
+					</div>
+				</div>
+			</div>
+			<Counter initial={1} />
+		</section>
+	)
+}
