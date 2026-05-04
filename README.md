@@ -20,7 +20,7 @@ macro-tracker ships a Remix-powered UI, server routing, and OAuth-protected MCP
 endpoints so you can build both a user-facing app and tooling APIs on the same
 Worker.
 
-## Quick Start
+## Quick Start Here
 
 ```bash
 bunx create-epicflare
