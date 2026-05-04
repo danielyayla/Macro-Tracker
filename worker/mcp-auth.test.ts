@@ -90,7 +90,7 @@ test('mcp request rejects invalid tokens', async () => {
 	expect(response.status).toBe(401)
 })
 
-test('mcp request rejects tokens without resource audience', async () => {
+test('mcp request accepts tokens without resource audience', async () => {
 	const tokenSummary: TokenSummary = {
 		id: 'token',
 		grantId: 'grant',
@@ -116,7 +116,7 @@ test('mcp request rejects tokens without resource audience', async () => {
 		fetchMcp: () => new Response('ok'),
 	})
 
-	expect(response.status).toBe(401)
+	expect(response.status).toBe(200)
 })
 
 test('mcp request forwards when token is valid', async () => {
