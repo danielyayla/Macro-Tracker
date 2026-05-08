@@ -1,6 +1,6 @@
 import { type MCP } from './index.ts'
-import { registerCalculatorAppResource } from './resources/calculator-app-resource.ts'
+import { registerKetoLogAppResource } from './resources/keto-log-app-resource.ts'
 
 export async function registerResources(agent: MCP) {
-	await registerCalculatorAppResource(agent)
+	await registerKetoLogAppResource(agent)
 }

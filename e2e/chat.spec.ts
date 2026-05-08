@@ -52,25 +52,23 @@ test('responds to mock tool commands in chat', async ({ page, login }) => {
 	await login()
 	await page.goto('/chat')
 
-	await page
-		.getByRole('textbox', { name: 'Message' })
-		.fill('tool:do_math;left=1;right=2;operator=+')
+	const command =
+		'tool:log_food;name=Avocado;kcal=240;fat_g=22;carbs_g=12;fiber_g=10;protein_g=3'
+	await page.getByRole('textbox', { name: 'Message' }).fill(command)
 	await page.getByRole('button', { name: 'Send message' }).click()
 
 	await expect(page).toHaveURL(/\/chat\/.+/)
 	await expect(
-		page
-			.locator('#chat-messages-scroll-container')
-			.getByText('tool:do_math;left=1;right=2;operator=+'),
+		page.locator('#chat-messages-scroll-container').getByText(command),
 	).toBeVisible()
 	await expect(
 		page
 			.locator('#chat-messages-scroll-container')
-			.getByText('## ✅ Result', { exact: false }),
+			.getByText('## ✅ Logged food', { exact: false }),
 	).toBeVisible()
 	await expect(
 		page
 			.locator('#chat-messages-scroll-container')
-			.getByText('**Result**: `3`', { exact: false }),
+			.getByText('**Avocado**', { exact: false }),
 	).toBeVisible()
 })

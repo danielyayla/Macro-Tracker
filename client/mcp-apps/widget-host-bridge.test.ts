@@ -109,13 +109,13 @@ test('sendUserMessageWithFallback delivers ui/message to latest-protocol host', 
 
 	bridge = createWidgetHostBridge({
 		appInfo: {
-			name: 'calculator-widget',
+			name: 'keto-log-widget',
 			version: '1.0.0',
 		},
 		requestTimeoutMs: 500,
 	})
 
-	const messageText = 'Calculator result: 7 + 3 = 10'
+	const messageText = 'Logged food: Avocado · 240 kcal'
 	const sent = await bridge.sendUserMessageWithFallback(messageText)
 	expect(sent).toBe(true)
 	expect(deliveredChatMessages).toEqual([messageText])

@@ -282,10 +282,10 @@ and handler colocated. Keep a small `register-tools` module that imports each
 tool module and registers them.
 
 ```typescript
-// mcp/tools/do-math.ts
-export async function registerDoMathTool(agent: MCP) {
+// mcp/tools/log-food.ts
+export async function registerLogFoodTool(agent: MCP) {
 	agent.server.registerTool(
-		'do_math',
+		'log_food',
 		{
 			/* metadata + schemas */
 		},
@@ -296,9 +296,9 @@ export async function registerDoMathTool(agent: MCP) {
 }
 
 // mcp/register-tools.ts
-import { registerDoMathTool } from './tools/do-math.ts'
+import { registerLogFoodTool } from './tools/log-food.ts'
 export async function registerTools(agent: MCP) {
-	await registerDoMathTool(agent)
+	await registerLogFoodTool(agent)
 }
 ```
 

@@ -1,10 +1,10 @@
 # MCP Apps starter guide
 
 This guide explains how to build MCP Apps in this starter project in a reusable
-way. It is intentionally **not** tied to the calculator example.
+way. It is intentionally **not** tied to the keto-log example.
 
-Use this when replacing starter tools/resources with your own product-specific
-UI and workflows.
+Use this when adding new product-specific UI and workflows alongside (or in
+place of) the keto-log tools and widget.
 
 ## Goals
 
@@ -94,7 +94,7 @@ When a UI should communicate back to the host agent:
 - Keep messages concise and deterministic where possible.
 - For inline `rawHtml` widgets in this repo, prefer reusing the shared runtime
   in `client/mcp-apps/widget-host-bridge.ts` (bundled into
-  `public/mcp-apps/calculator-widget.js`) instead of duplicating bridge code.
+  `public/mcp-apps/keto-log-widget.js`) instead of duplicating bridge code.
 
 You can also send simplified MCP-UI actions via `window.parent.postMessage(...)`
 (`type: 'tool' | 'prompt' | 'notify' | 'link'`) when using the `mcpApps`
@@ -151,7 +151,7 @@ token values into widget CSS. If you do this in an MCP App resource, set
 
 ## Replacing starter examples safely
 
-When removing starter examples (for example calculator + math tool):
+When removing starter examples (for example the keto-log tools + widget):
 
 1. Delete example modules under `mcp/apps`, `mcp/tools`, and `mcp/resources`.
 2. Replace entries in registration modules.

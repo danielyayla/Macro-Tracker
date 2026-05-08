@@ -16,7 +16,13 @@ import {
 const workerConfig = 'mock-servers/resend/wrangler.jsonc'
 const projectRoot = process.cwd()
 const nodeBin = process.execPath
-const wranglerCli = join(projectRoot, 'node_modules', 'wrangler', 'wrangler-dist', 'cli.js')
+const wranglerCli = join(
+	projectRoot,
+	'node_modules',
+	'wrangler',
+	'wrangler-dist',
+	'cli.js',
+)
 const defaultTimeoutMs = 60_000
 
 function bufferToText(buffer: Uint8Array<ArrayBufferLike> | null | undefined) {

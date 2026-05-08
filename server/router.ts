@@ -10,6 +10,12 @@ import {
 } from './handlers/chat-threads.ts'
 import { createHealthHandler } from './handlers/health.ts'
 import { home } from './handlers/home.ts'
+import {
+	createKetoEntriesDeleteHandler,
+	createKetoEntriesHandler,
+	createKetoEntriesUpdateHandler,
+} from './handlers/keto-entries.ts'
+import { createKetoGoalsHandler } from './handlers/keto-goals.ts'
 import { login } from './handlers/login.ts'
 import { logout } from './handlers/logout.ts'
 import {
@@ -30,6 +36,8 @@ export function createAppRouter(appEnv: AppEnv) {
 		},
 	})
 	const chatThreadsHandler = createChatThreadsHandler(appEnv)
+	const ketoEntriesHandler = createKetoEntriesHandler(appEnv)
+	const ketoGoalsHandler = createKetoGoalsHandler(appEnv)
 
 	router.map(routes.home, home)
 	router.map(routes.chat, chat)
@@ -38,6 +46,12 @@ export function createAppRouter(appEnv: AppEnv) {
 	router.map(routes.chatThreadsCreate, chatThreadsHandler)
 	router.map(routes.chatThreadsUpdate, createUpdateChatThreadHandler(appEnv))
 	router.map(routes.chatThreadsDelete, createDeleteChatThreadHandler(appEnv))
+	router.map(routes.ketoEntries, ketoEntriesHandler)
+	router.map(routes.ketoEntriesCreate, ketoEntriesHandler)
+	router.map(routes.ketoEntriesUpdate, createKetoEntriesUpdateHandler(appEnv))
+	router.map(routes.ketoEntriesDelete, createKetoEntriesDeleteHandler(appEnv))
+	router.map(routes.ketoGoals, ketoGoalsHandler)
+	router.map(routes.ketoGoalsUpdate, ketoGoalsHandler)
 	router.map(routes.health, createHealthHandler(appEnv))
 	router.map(routes.login, login)
 	router.map(routes.signup, signup)

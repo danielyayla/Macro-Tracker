@@ -30,9 +30,27 @@ import {
 const projectRoot = fileURLToPath(new URL('..', import.meta.url))
 const migrationsDir = join(projectRoot, 'migrations')
 const nodeBin = process.execPath
-const wranglerCli = join(projectRoot, 'node_modules', 'wrangler', 'wrangler-dist', 'cli.js')
+const wranglerCli = join(
+	projectRoot,
+	'node_modules',
+	'wrangler',
+	'wrangler-dist',
+	'cli.js',
+)
 const defaultTimeoutMs = 60_000
-const calculatorUiResourceUri = 'ui://calculator-app/entry-point.html'
+const ketoLogUiResourceUri = 'ui://keto-log-app/entry-point.html'
+
+const expectedToolNames = [
+	'delete_entry',
+	'get_goals',
+	'get_log',
+	'log_food',
+	'log_glucose',
+	'log_ketone',
+	'open_log_ui',
+	'set_goals',
+	'update_entry',
+]
 
 const passwordHashPrefix = 'pbkdf2_sha256'
 const passwordSaltBytes = 16
@@ -484,8 +502,8 @@ test(
 		const result = await mcpClient.client.listTools()
 		const toolNames = result.tools.map((tool) => tool.name)
 
-		expect(toolNames.sort()).toEqual(['do_math', 'open_calculator_ui'])
-	}
+		expect(toolNames.sort()).toEqual(expectedToolNames)
+	},
 )
 
 test(
@@ -502,51 +520,76 @@ test(
 		const result = await mcpClient.client.listTools()
 		const toolNames = result.tools.map((tool) => tool.name)
 
-		expect(toolNames.sort()).toEqual(['do_math', 'open_calculator_ui'])
+		expect(toolNames.sort()).toEqual(expectedToolNames)
 
 		const resourcesResult = await mcpClient.client.listResources()
 		const resourceUris = resourcesResult.resources.map(
 			(resource) => resource.uri,
 		)
 
-		expect(resourceUris).toContain(calculatorUiResourceUri)
-	}
+		expect(resourceUris).toContain(ketoLogUiResourceUri)
+	},
 )
 
 test(
-	'mcp server executes do_math tool',
+	'mcp server logs food and reads it back via get_log',
 	{ timeout: defaultTimeoutMs },
 	async () => {
 		await using database = await createTestDatabase()
 		await using server = await startDevServer(database.persistDir)
 		await using mcpClient = await createMcpClient(server.origin, database.user)
 
-		const result = await mcpClient.client.callTool({
-			name: 'do_math',
+		const logResult = await mcpClient.client.callTool({
+			name: 'log_food',
 			arguments: {
-				left: 8,
-				right: 4,
-				operator: '+',
+				name: 'Bunless cheeseburger',
+				kcal: 540,
+				fat_g: 42,
+				carbs_g: 6,
+				fiber_g: 1,
+				protein_g: 32,
+				serving: '1 patty',
 			},
 		})
-
-		const structuredResult = (result as CallToolResult).structuredContent as
+		const logStructured = (logResult as CallToolResult).structuredContent as
 			| Record<string, unknown>
 			| undefined
-		expect(structuredResult?.result).toBe(12)
+		const loggedEntry = logStructured?.entry as
+			| { id: number; netCarbsG: number; kcal: number }
+			| undefined
+		expect(loggedEntry).toBeDefined()
+		expect(loggedEntry?.netCarbsG).toBe(5)
+		expect(loggedEntry?.kcal).toBe(540)
 
-		const textOutput =
-			(result as CallToolResult).content.find(
-				(item): item is Extract<ContentBlock, { type: 'text' }> =>
-					item.type === 'text',
-			)?.text ?? ''
+		const ketoneResult = await mcpClient.client.callTool({
+			name: 'log_ketone',
+			arguments: { value: 1.8, unit: 'mmol_L_blood' },
+		})
+		expect((ketoneResult as CallToolResult).isError).not.toBe(true)
 
-		expect(textOutput).toContain('12')
-	}
+		const glucoseResult = await mcpClient.client.callTool({
+			name: 'log_glucose',
+			arguments: { value: 90, unit: 'mg_dL' },
+		})
+		expect((glucoseResult as CallToolResult).isError).not.toBe(true)
+
+		const logRange = await mcpClient.client.callTool({ name: 'get_log' })
+		const rangeStructured = (logRange as CallToolResult).structuredContent as
+			| {
+					entries: Array<{ kind: string }>
+					totals: { kcal: number; netCarbsG: number }
+					latestGki: { gki: number } | null
+			  }
+			| undefined
+		expect(rangeStructured?.entries.length).toBe(3)
+		expect(rangeStructured?.totals.kcal).toBe(540)
+		expect(rangeStructured?.totals.netCarbsG).toBe(5)
+		expect(rangeStructured?.latestGki?.gki).toBeCloseTo(90 / 18 / 1.8, 4)
+	},
 )
 
 test(
-	'mcp server executes calculator ui tool and serves resource entry point',
+	'mcp server opens log ui tool and serves resource entry point',
 	{ timeout: defaultTimeoutMs },
 	async () => {
 		await using database = await createTestDatabase()
@@ -554,34 +597,34 @@ test(
 		await using mcpClient = await createMcpClient(server.origin, database.user)
 
 		const result = await mcpClient.client.callTool({
-			name: 'open_calculator_ui',
+			name: 'open_log_ui',
 		})
 
 		const structuredResult = (result as CallToolResult).structuredContent as
 			| Record<string, unknown>
 			| undefined
-		expect(structuredResult?.widget).toBe('calculator')
-		expect(structuredResult?.resourceUri).toBe(calculatorUiResourceUri)
+		expect(structuredResult?.widget).toBe('keto-log')
+		expect(structuredResult?.resourceUri).toBe(ketoLogUiResourceUri)
 
 		const textOutput =
 			(result as CallToolResult).content.find(
 				(item): item is Extract<ContentBlock, { type: 'text' }> =>
 					item.type === 'text',
 			)?.text ?? ''
-		expect(textOutput).toContain('Calculator widget')
+		expect(textOutput).toContain('Keto log widget')
 
 		const resourceResult = await mcpClient.client.readResource({
-			uri: calculatorUiResourceUri,
+			uri: ketoLogUiResourceUri,
 		})
-		const calculatorResource = resourceResult.contents.find(
+		const ketoLogResource = resourceResult.contents.find(
 			(content): content is { uri: string; mimeType?: string; text: string } =>
-				content.uri === calculatorUiResourceUri &&
+				content.uri === ketoLogUiResourceUri &&
 				'text' in content &&
 				typeof content.text === 'string',
 		)
-		const calculatorResourceMeta = (
+		const ketoLogResourceMeta = (
 			resourceResult.contents.find(
-				(content) => content.uri === calculatorUiResourceUri,
+				(content) => content.uri === ketoLogUiResourceUri,
 			) as { _meta?: Record<string, unknown> } | undefined
 		)?._meta as
 			| {
@@ -595,30 +638,26 @@ test(
 			  }
 			| undefined
 
-		expect(calculatorResource).toBeDefined()
-		expect(calculatorResource?.mimeType).toBe('text/html;profile=mcp-app')
-		expect(calculatorResource?.text).toContain('data-calculator-ui')
-		expect(calculatorResource?.text).toContain('rel="stylesheet"')
-		expect(calculatorResource?.text).toContain('styles.css')
-		expect(calculatorResource?.text).toContain('--color-primary')
-		expect(calculatorResource?.text).toContain('--color-background')
-		expect(calculatorResource?.text).toContain("data-theme='dark'")
-		expect(calculatorResource?.text).toContain('type="module"')
-		expect(calculatorResource?.text).toContain('/mcp-apps/calculator-widget.js')
+		expect(ketoLogResource).toBeDefined()
+		expect(ketoLogResource?.mimeType).toBe('text/html;profile=mcp-app')
+		expect(ketoLogResource?.text).toContain('data-keto-log-ui')
+		expect(ketoLogResource?.text).toContain('rel="stylesheet"')
+		expect(ketoLogResource?.text).toContain('styles.css')
+		expect(ketoLogResource?.text).toContain('--color-primary')
+		expect(ketoLogResource?.text).toContain('--color-background')
+		expect(ketoLogResource?.text).toContain("data-theme='dark'")
+		expect(ketoLogResource?.text).toContain('type="module"')
+		expect(ketoLogResource?.text).toContain('/mcp-apps/keto-log-widget.js')
 
-		const calculatorWidgetResponse = await fetch(
-			new URL('/mcp-apps/calculator-widget.js', server.origin),
+		const widgetResponse = await fetch(
+			new URL('/mcp-apps/keto-log-widget.js', server.origin),
 		)
-		expect(calculatorWidgetResponse.ok).toBe(true)
-		expect(
-			calculatorWidgetResponse.headers.get('access-control-allow-origin'),
-		).toBe('*')
-		const calculatorWidgetSource = await calculatorWidgetResponse.text()
-		expect(calculatorWidgetSource).toContain('createWidgetHostBridge')
-		expect(calculatorWidgetSource).toContain('Calculator result:')
-		expect(calculatorWidgetSource).toContain('sendUserMessageWithFallback')
-		expect(calculatorWidgetSource).toContain('ui/initialize')
-		expect(calculatorWidgetSource).toContain('ui/message')
+		expect(widgetResponse.ok).toBe(true)
+		expect(widgetResponse.headers.get('access-control-allow-origin')).toBe('*')
+		const widgetSource = await widgetResponse.text()
+		expect(widgetSource).toContain('createWidgetHostBridge')
+		expect(widgetSource).toContain('keto-log-widget')
+		expect(widgetSource).toContain('ui/initialize')
 
 		const stylesResponse = await fetch(new URL('/styles.css', server.origin))
 		expect(stylesResponse.ok).toBe(true)
@@ -634,10 +673,10 @@ test(
 			.slice(0, 32)
 		const expectedSandboxDomain = `${sandboxHash}.claudemcpcontent.com`
 
-		expect(calculatorResourceMeta?.ui?.domain).toBe(expectedSandboxDomain)
-		expect(calculatorResourceMeta?.['openai/widgetDomain']).toBe(server.origin)
-		expect(calculatorResourceMeta?.ui?.csp?.resourceDomains).toContain(
+		expect(ketoLogResourceMeta?.ui?.domain).toBe(expectedSandboxDomain)
+		expect(ketoLogResourceMeta?.['openai/widgetDomain']).toBe(server.origin)
+		expect(ketoLogResourceMeta?.ui?.csp?.resourceDomains).toContain(
 			server.origin,
 		)
-	}
+	},
 )

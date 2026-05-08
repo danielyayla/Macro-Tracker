@@ -1,6 +1,9 @@
 /// <reference types="bun" />
 import { expect, test } from 'vitest'
-import { type OAuthHelpers, type TokenSummary } from '@cloudflare/workers-oauth-provider'
+import {
+	type OAuthHelpers,
+	type TokenSummary,
+} from '@cloudflare/workers-oauth-provider'
 import {
 	buildProtectedResourceMetadata,
 	handleMcpRequest,

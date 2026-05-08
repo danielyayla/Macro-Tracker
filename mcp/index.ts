@@ -15,12 +15,28 @@ const serverMetadata = {
 		version: '1.0.0',
 	},
 	instructions: `
+This server tracks a user's ketogenic diet: food, ketone readings, and blood
+glucose readings. Each user has their own log scoped by the connected account.
+
 Quick start
-- Use 'do_math' any time you need arithmetic. Prefer calling the tool over doing mental math.
-- Use 'open_calculator_ui' when you want an interactive calculator widget in MCP App compatible hosts.
+- After analyzing a food photo or text description, call 'log_food' with the
+	macros (kcal, fat_g, carbs_g; ideally fiber_g and protein_g too).
+- Call 'log_ketone' / 'log_glucose' when the user reports a meter reading.
+	Always include the device unit — units are not interchangeable.
+- Call 'get_log' to read today's interleaved timeline with running totals and
+	the latest GKI (Glucose Ketone Index).
+- Call 'open_log_ui' when an MCP App compatible host can render an interactive
+	timeline widget.
+- Call 'update_entry' / 'delete_entry' to fix mistakes. Use 'get_log' first to
+	find the entry id.
+- Call 'get_goals' / 'set_goals' to read or change daily targets and the user's
+	target ketone range.
 
 How to chain tools safely
-- If you need to verify, re-run 'do_math' with the same arguments (idempotent) or validate with an inverse operation.
+- 'get_log' is the single source of truth for what's already logged today.
+	Re-run it after any write to confirm.
+- All write tools echo the saved row in structuredContent.entry, so you can
+	confirm without a follow-up read.
 	`.trim(),
 } as const
 

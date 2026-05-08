@@ -4,17 +4,17 @@ import {
 } from '@modelcontextprotocol/ext-apps/server'
 import { createUIResource } from '@mcp-ui/server'
 import {
-	calculatorUiResourceUri,
-	renderCalculatorUiEntryPoint,
-} from '#mcp/apps/calculator-ui-entry-point.ts'
+	ketoLogUiResourceUri,
+	renderKetoLogUiEntryPoint,
+} from '#mcp/apps/keto-log-ui-entry-point.ts'
 import { type MCP } from '#mcp/index.ts'
 import { toHex } from '#server/hex.ts'
 
-const calculatorAppResource = {
-	name: 'calculator_app_resource',
-	title: 'Calculator App Resource',
+const ketoLogAppResource = {
+	name: 'keto_log_app_resource',
+	title: 'Keto Log App Resource',
 	description:
-		'Interactive calculator app entry point rendered by MCP App compatible hosts.',
+		'Interactive keto-log timeline app entry point rendered by MCP App compatible hosts.',
 } as const
 
 // Claude.ai requires ui.domain to be a deterministic sandbox subdomain derived
@@ -26,25 +26,27 @@ async function computeClaudeMcpContentDomain(mcpUrl: string) {
 	return `${hash}.claudemcpcontent.com`
 }
 
-export async function registerCalculatorAppResource(agent: MCP) {
+export async function registerKetoLogAppResource(agent: MCP) {
 	const baseUrl = agent.requireDomain()
 	const workerOrigin = new URL('/styles.css', baseUrl).origin
-	const sandboxDomain = await computeClaudeMcpContentDomain(`${workerOrigin}/mcp`)
+	const sandboxDomain = await computeClaudeMcpContentDomain(
+		`${workerOrigin}/mcp`,
+	)
 
 	registerAppResource(
 		agent.server,
-		calculatorAppResource.name,
-		calculatorUiResourceUri,
+		ketoLogAppResource.name,
+		ketoLogUiResourceUri,
 		{
-			title: calculatorAppResource.title,
-			description: calculatorAppResource.description,
+			title: ketoLogAppResource.title,
+			description: ketoLogAppResource.description,
 		},
 		async () => {
-			const calculatorUiResource = createUIResource({
-				uri: calculatorUiResourceUri,
+			const ketoLogUiResource = createUIResource({
+				uri: ketoLogUiResourceUri,
 				content: {
 					type: 'rawHtml',
-					htmlString: renderCalculatorUiEntryPoint(baseUrl),
+					htmlString: renderKetoLogUiEntryPoint(baseUrl),
 				},
 				encoding: 'text',
 				adapters: {
@@ -57,7 +59,7 @@ export async function registerCalculatorAppResource(agent: MCP) {
 			return {
 				contents: [
 					{
-						...calculatorUiResource.resource,
+						...ketoLogUiResource.resource,
 						mimeType: RESOURCE_MIME_TYPE,
 						_meta: {
 							ui: {

@@ -26,7 +26,7 @@ export function buildHelpResponse(toolNames: Array<string>): MockAiResponse {
 		'- help',
 		'- stream',
 		'- error',
-		'- tool:do_math;left=1;right=2;operator=+',
+		'- tool:log_food;name=Avocado;kcal=240;fat_g=22;carbs_g=12;fiber_g=10;protein_g=3',
 	]
 
 	if (sortedToolNames.length > 0) {

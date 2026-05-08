@@ -16,9 +16,22 @@
 
 ---
 
-macro-tracker ships a Remix-powered UI, server routing, and OAuth-protected MCP
-endpoints so you can build both a user-facing app and tooling APIs on the same
-Worker.
+macro-tracker is a ketogenic-diet logger built on Remix + Cloudflare Workers. A
+user takes a photo of their food in Claude (mobile or desktop), Claude analyzes
+the macros, and the OAuth-protected MCP server records the entry alongside
+ketone and blood-glucose readings on this same Worker. The web app surfaces the
+daily timeline, totals, and progress against personal goals.
+
+## How a meal flows through the system
+
+1. User snaps a photo or describes a food in Claude.
+2. Claude calls `log_food` (kcal, fat_g, carbs_g, fiber_g, protein_g, …) over
+   MCP. The same MCP also exposes `log_ketone`, `log_glucose`, `update_entry`,
+   `delete_entry`, `get_log`, `set_goals`, `get_goals`, and `open_log_ui`.
+3. The Worker writes to D1, scoped to the connected user's account.
+4. The web app at `/` shows the same data: today's entries, daily macro totals
+   versus goals, and the latest GKI (Glucose Ketone Index) when both a glucose
+   reading and a blood-ketone reading exist for the day.
 
 ## Quick Start Here
 

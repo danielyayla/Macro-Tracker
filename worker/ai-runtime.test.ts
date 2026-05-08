@@ -3,9 +3,7 @@ import { createServer } from 'node:http'
 import { type AddressInfo } from 'node:net'
 import { expect, test, vi } from 'vitest'
 
-async function loadCreateAiRuntime(
-	setupMocks?: () => void,
-) {
+async function loadCreateAiRuntime(setupMocks?: () => void) {
 	vi.resetModules()
 	setupMocks?.()
 	const module = await import('./ai-runtime.ts')
@@ -66,7 +64,7 @@ test('createAiRuntime uses mock backend when AI_MODE=mock', async () => {
 		messages: [],
 		system: 'test',
 		tools: {},
-		toolNames: ['do_math'],
+		toolNames: ['log_food'],
 	})
 
 	expect(result).toEqual({
@@ -136,7 +134,10 @@ test('createAiRuntime configures remote streaming to continue after tool calls',
 			},
 		}))
 		vi.doMock('workers-ai-provider', () => ({
-			createWorkersAI: () => (model: string) => ({ provider: 'workers-ai', model }),
+			createWorkersAI: () => (model: string) => ({
+				provider: 'workers-ai',
+				model,
+			}),
 		}))
 	})
 	const runtime = createAiRuntime({
@@ -150,7 +151,7 @@ test('createAiRuntime configures remote streaming to continue after tool calls',
 		messages: [],
 		system: 'test',
 		tools: {},
-		toolNames: ['do_math'],
+		toolNames: ['log_food'],
 		onFinish,
 	})
 

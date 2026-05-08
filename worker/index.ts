@@ -92,15 +92,15 @@ const appHandler = withCors({
 			}
 		}
 
-		// Dev route: serve calculator UI for iframe testing (simulates ChatGPT/MCP Jam)
+		// Dev route: serve keto-log UI for iframe testing (simulates ChatGPT/MCP Jam)
 		if (
-			url.pathname === '/dev/calculator-ui' &&
+			url.pathname === '/dev/keto-log-ui' &&
 			(request.method === 'GET' || request.method === 'HEAD')
 		) {
-			const { renderCalculatorUiEntryPoint } =
-				await import('#mcp/apps/calculator-ui-entry-point.ts')
+			const { renderKetoLogUiEntryPoint } =
+				await import('#mcp/apps/keto-log-ui-entry-point.ts')
 			const baseUrl = new URL('/', url.origin)
-			const html = renderCalculatorUiEntryPoint(baseUrl)
+			const html = renderKetoLogUiEntryPoint(baseUrl)
 			return new Response(html, {
 				headers: {
 					'Content-Type': 'text/html; charset=utf-8',

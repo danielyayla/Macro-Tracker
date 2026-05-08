@@ -6,7 +6,9 @@ export type TrackedProcess = {
 	exitPromise: Promise<number | null>
 }
 
-export function captureOutput(stream: NodeJS.ReadableStream | null | undefined) {
+export function captureOutput(
+	stream: NodeJS.ReadableStream | null | undefined,
+) {
 	let output = ''
 	if (!stream) {
 		return () => output
