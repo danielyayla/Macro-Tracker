@@ -70,7 +70,12 @@ function audienceMatches(
 	const allowed = Array.isArray(audience) ? audience : [audience]
 	const origin = requestUrl.origin
 	const resourcePath = `${origin}${mcpResourcePath}`
-	return allowed.some((value) => value === origin || value === resourcePath)
+	const stripTrailingSlash = (value: string) =>
+		value.endsWith('/') ? value.slice(0, -1) : value
+	return allowed.some((value) => {
+		const normalized = stripTrailingSlash(value)
+		return normalized === origin || normalized === resourcePath
+	})
 }
 
 export async function handleMcpRequest({

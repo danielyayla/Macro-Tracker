@@ -8,6 +8,7 @@ import {
 	renderCalculatorUiEntryPoint,
 } from '#mcp/apps/calculator-ui-entry-point.ts'
 import { type MCP } from '#mcp/index.ts'
+import { toHex } from '#server/hex.ts'
 
 const calculatorAppResource = {
 	name: 'calculator_app_resource',
@@ -16,9 +17,19 @@ const calculatorAppResource = {
 		'Interactive calculator app entry point rendered by MCP App compatible hosts.',
 } as const
 
+// Claude.ai requires ui.domain to be a deterministic sandbox subdomain derived
+// from the MCP endpoint URL: sha256(mcpUrl).slice(0, 32) + '.claudemcpcontent.com'.
+async function computeClaudeMcpContentDomain(mcpUrl: string) {
+	const data = new TextEncoder().encode(mcpUrl)
+	const digest = await crypto.subtle.digest('SHA-256', data)
+	const hash = toHex(new Uint8Array(digest)).slice(0, 32)
+	return `${hash}.claudemcpcontent.com`
+}
+
 export async function registerCalculatorAppResource(agent: MCP) {
 	const baseUrl = agent.requireDomain()
-	const resourceDomain = new URL('/styles.css', baseUrl).origin
+	const workerOrigin = new URL('/styles.css', baseUrl).origin
+	const sandboxDomain = await computeClaudeMcpContentDomain(`${workerOrigin}/mcp`)
 
 	registerAppResource(
 		agent.server,
@@ -51,12 +62,12 @@ export async function registerCalculatorAppResource(agent: MCP) {
 						_meta: {
 							ui: {
 								prefersBorder: true,
-								domain: resourceDomain,
+								domain: sandboxDomain,
 								csp: {
-									resourceDomains: [resourceDomain],
+									resourceDomains: [workerOrigin],
 								},
 							},
-							'openai/widgetDomain': resourceDomain,
+							'openai/widgetDomain': workerOrigin,
 						},
 					},
 				],

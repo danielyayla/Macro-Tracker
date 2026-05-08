@@ -33,30 +33,39 @@ export function renderCalculatorUiEntryPoint(baseUrl: string | URL) {
 				box-sizing: border-box;
 			}
 
+			html,
+			body {
+				height: 100%;
+			}
+
 			body {
 				margin: 0;
-				padding: var(--spacing-md);
+				padding: 0;
 				font-family: var(--font-family);
 				font-size: var(--font-size-base);
 				color: var(--color-text);
 				background: var(--color-background);
+				overflow: hidden;
 			}
 
 			.calculator-root {
 				width: min(100%, 28rem);
+				height: 100%;
 				margin: 0 auto;
-				padding: var(--spacing-lg);
-				display: grid;
-				gap: var(--spacing-md);
+				padding: var(--spacing-sm);
+				display: flex;
+				flex-direction: column;
+				gap: var(--spacing-sm);
 				border-radius: var(--radius-lg);
 				border: 1px solid var(--color-border);
 				background-color: var(--color-surface);
 				box-shadow: var(--shadow-sm);
+				min-height: 0;
 			}
 
 			.calculator-title {
 				margin: 0;
-				font-size: var(--font-size-lg);
+				font-size: var(--font-size-base);
 				font-weight: var(--font-weight-semibold);
 				color: var(--color-text);
 			}
@@ -67,18 +76,24 @@ export function renderCalculatorUiEntryPoint(baseUrl: string | URL) {
 				color: var(--color-text-muted);
 			}
 
+			@media (max-height: 520px) {
+				.calculator-help {
+					display: none;
+				}
+			}
+
 			.calculator-display {
 				border-radius: var(--radius-md);
-				padding: var(--spacing-md);
+				padding: var(--spacing-sm);
 				background: color-mix(
 					in srgb,
 					var(--color-background) 72%,
 					var(--color-surface)
 				);
 				border: 1px solid var(--color-border);
-				min-height: 80px;
-				display: grid;
-				align-content: center;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
 				gap: var(--spacing-xs);
 			}
 
@@ -90,7 +105,7 @@ export function renderCalculatorUiEntryPoint(baseUrl: string | URL) {
 			}
 
 			.calculator-result {
-				font-size: var(--font-size-xl);
+				font-size: var(--font-size-lg);
 				line-height: 1;
 				font-variant-numeric: tabular-nums;
 				word-break: break-all;
@@ -98,21 +113,25 @@ export function renderCalculatorUiEntryPoint(baseUrl: string | URL) {
 			}
 
 			.calculator-keypad {
+				flex: 1 1 auto;
+				min-height: 0;
 				display: grid;
 				grid-template-columns: repeat(4, minmax(0, 1fr));
-				gap: var(--spacing-sm);
+				grid-auto-rows: minmax(0, 1fr);
+				gap: var(--spacing-xs);
 			}
 
 			.calculator-key {
 				border: 1px solid var(--color-border);
 				background-color: var(--color-background);
 				color: var(--color-text);
-				padding: var(--spacing-sm);
+				padding: var(--spacing-xs);
 				border-radius: var(--radius-md);
 				font-family: var(--font-family);
 				font-size: var(--font-size-base);
 				font-weight: var(--font-weight-medium);
 				cursor: pointer;
+				min-height: 0;
 				transition:
 					transform var(--transition-fast),
 					background-color var(--transition-normal),
