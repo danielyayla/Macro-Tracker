@@ -33,6 +33,7 @@ export async function readAuthenticatedAppUser(request: Request, env: Env) {
 		displayName: buildDisplayName(session.email),
 		mcpUser: {
 			userId: session.id,
+			appUserId: userId,
 			email: session.email,
 			displayName: buildDisplayName(session.email),
 		},

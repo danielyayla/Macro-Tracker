@@ -12,6 +12,7 @@ export type AiMode = (typeof aiModeValues)[number]
 
 export const mcpUserContextSchema = object({
 	userId: string(),
+	appUserId: number(),
 	email: string(),
 	displayName: string(),
 })

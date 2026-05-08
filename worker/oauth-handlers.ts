@@ -28,6 +28,7 @@ export const oauthScopes: Array<string> = ['profile', 'email']
 
 type OAuthProps = {
 	userId: string
+	appUserId: number
 	email: string
 	displayName: string
 }
@@ -246,9 +247,10 @@ export async function handleAuthorizeRequest(
 		return respondAuthorizeError(request, 'Email and password are required.')
 	}
 
+	const db = createDb(env.APP_DB)
 	let approvedEmail = ''
+	let approvedAppUserId: number | null = null
 	if (hasFormCredentials) {
-		const db = createDb(env.APP_DB)
 		const userRecord = await db.findOne(usersTable, {
 			where: { email: normalizedEmail },
 		})
@@ -272,8 +274,20 @@ export async function handleAuthorizeRequest(
 			return respondAuthorizeError(request, 'Invalid email or password.')
 		}
 		approvedEmail = normalizedEmail
+		approvedAppUserId = userRecord.id
 	} else if (sessionEmail) {
 		approvedEmail = sessionEmail
+		const sessionUserRecord = await db.findOne(usersTable, {
+			where: { email: sessionEmail },
+		})
+		if (!sessionUserRecord) {
+			return respondAuthorizeError(request, 'Account no longer exists.')
+		}
+		approvedAppUserId = sessionUserRecord.id
+	}
+
+	if (approvedAppUserId === null) {
+		return respondAuthorizeError(request, 'Could not resolve user account.')
 	}
 
 	const resolvedScopes = resolveScopes(authRequest.scope)
@@ -290,6 +304,7 @@ export async function handleAuthorizeRequest(
 			scope: resolvedScopes,
 			props: {
 				userId,
+				appUserId: approvedAppUserId,
 				email: approvedEmail,
 				displayName,
 			},

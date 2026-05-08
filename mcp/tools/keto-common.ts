@@ -10,13 +10,11 @@ export type ResolvedToolContext = {
 export function resolveToolContext(agent: MCP): ResolvedToolContext | null {
 	const { user } = agent.getCallerContext()
 	if (!user) return null
-	const userId = Number.parseInt(user.userId, 10)
-	if (!Number.isFinite(userId)) return null
 	const env = (agent as unknown as { env: Env }).env
-	const db = env.APP_DB
+	const db = env?.APP_DB
 	if (!db) return null
 	return {
-		userId,
+		userId: user.appUserId,
 		userEmail: user.email,
 		store: createKetoLogStore(db),
 	}

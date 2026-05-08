@@ -573,7 +573,10 @@ test(
 		})
 		expect((glucoseResult as CallToolResult).isError).not.toBe(true)
 
-		const logRange = await mcpClient.client.callTool({ name: 'get_log' })
+		const logRange = await mcpClient.client.callTool({
+			name: 'get_log',
+			arguments: {},
+		})
 		const rangeStructured = (logRange as CallToolResult).structuredContent as
 			| {
 					entries: Array<{ kind: string }>
