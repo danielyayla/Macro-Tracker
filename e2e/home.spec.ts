@@ -4,7 +4,7 @@ test('home page renders the shell', async ({ page }) => {
 	await page.goto('/')
 	await expect(page).toHaveTitle('macro-tracker')
 	await expect(
-		page.getByRole('heading', { name: 'macro-tracker Remix 3' }),
+		page.getByRole('heading', { name: "Today's keto log" }),
 	).toBeVisible()
 })
 
