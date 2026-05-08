@@ -624,7 +624,17 @@ test(
 		expect(stylesResponse.ok).toBe(true)
 		expect(stylesResponse.headers.get('access-control-allow-origin')).toBe('*')
 
-		expect(calculatorResourceMeta?.ui?.domain).toBe(server.origin)
+		const sandboxDigest = await crypto.subtle.digest(
+			'SHA-256',
+			new TextEncoder().encode(`${server.origin}/mcp`),
+		)
+		const sandboxHash = Array.from(new Uint8Array(sandboxDigest))
+			.map((value) => value.toString(16).padStart(2, '0'))
+			.join('')
+			.slice(0, 32)
+		const expectedSandboxDomain = `${sandboxHash}.claudemcpcontent.com`
+
+		expect(calculatorResourceMeta?.ui?.domain).toBe(expectedSandboxDomain)
 		expect(calculatorResourceMeta?.['openai/widgetDomain']).toBe(server.origin)
 		expect(calculatorResourceMeta?.ui?.csp?.resourceDomains).toContain(
 			server.origin,
